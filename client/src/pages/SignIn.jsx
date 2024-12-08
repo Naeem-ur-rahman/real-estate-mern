@@ -2,50 +2,53 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { apiClient } from '../lib/api-client'
 import { SIGNIN_ROUTE } from '../utils/constants'
-
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure
+} from '../redux/user/userSlice.js'
 const SignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const { error, loading } = useSelector(state => state?.user)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const handleChange = e => {
     setFormData({ ...formData, [e?.target?.id]: e?.target?.value })
   }
   const validateForm = () => {
     const { email, password } = formData
     if (email === '' || password === '') {
-      setError('All fields are required')
+      dispatch(signInFailure('All fields are required'))
       return false
     }
     if (email.indexOf('@') === -1) {
-      setError('Please enter a valid email')
+      dispatch(signInFailure('Please enter a valid email'))
       return false
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long')
+      dispatch(signInFailure('Password must be at least 6 characters long'))
       return false
     }
     return true
   }
   const handleSubmit = async e => {
     e.preventDefault()
-    setLoading(true)
+    dispatch(signInStart())
     if (!validateForm()) {
-      setLoading(false)
       return
     }
-    await apiClient.post(SIGNIN_ROUTE, formData)
-      .then(() => {
-        setError(null)
-        setLoading(false)
+    await apiClient
+      .post(SIGNIN_ROUTE, formData)
+      .then(res => {
+        dispatch(signInSuccess(res?.data))
         navigate('/')
       })
       .catch(err => {
-        setError(err?.response?.data?.message)
-        setLoading(false)
+        dispatch(signInFailure(err?.response?.data?.message))
       })
   }
 
