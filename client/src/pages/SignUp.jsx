@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { apiClient } from '../lib/api-client'
 import { SIGNUP_ROUTE } from '../utils/constants'
+import OAuth from '../components/OAuth'
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -38,7 +39,8 @@ const SignUp = () => {
       setLoading(false)
       return
     }
-    await apiClient.post(SIGNUP_ROUTE, formData)
+    await apiClient
+      .post(SIGNUP_ROUTE, formData)
       .then(() => {
         setError(null)
         setLoading(false)
@@ -81,6 +83,7 @@ const SignUp = () => {
         >
           {loading ? 'Loading...' : 'Sign Up'}
         </button>
+        <OAuth />
       </form>
       <div className='flex gap-2 mt-5'>
         <p>Have an account?</p>
