@@ -28,6 +28,9 @@ export const signin = async (req, res, next) => {
         res
             .cookie('access_token', token, {
                 httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/',
                 expires: new Date(Date.now() + 1000 * 60 * 60)
             })
             .status(200)
@@ -47,9 +50,9 @@ export const google = async (req, res, next) => {
                 httpOnly: true,
                 expires: new Date(Date.now() + 1000 * 60 * 60)
             })
-            .status(200)
-            .json(rest);
-            
+                .status(200)
+                .json(rest);
+
         } else {
             const salt = bcryptjs.genSaltSync(10);
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
@@ -64,7 +67,7 @@ export const google = async (req, res, next) => {
 
             await newUser.save();
             const token = jwt.sign({ id: newUser._id }, process.env.JWT_KEY);
-            const { password: pass, salt:newSalt, ...rest } = newUser._doc;
+            const { password: pass, salt: newSalt, ...rest } = newUser._doc;
             res.cookie('access_token', token, {
                 httpOnly: true,
                 expires: new Date(Date.now() + 1000 * 60 * 60)
