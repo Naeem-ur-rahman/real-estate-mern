@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUserStart, updateUserSuccess, updateUserFailure } from "../redux/user/userSlice";
+import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserFailure, deleteUserStart, deleteUserSuccess } from "../redux/user/userSlice";
 import { apiClient } from "../lib/api-client";
-import { UPDATE_USER_ROUTE } from "../utils/constants";
+import { DELETE_USER_ROUTE, UPDATE_USER_ROUTE } from "../utils/constants";
 const Profile = () => {
     const { currentUser, error, loading } = useSelector(state => state.user)
     const fileRef = useRef(null);
@@ -71,6 +71,17 @@ const Profile = () => {
             });
     }
 
+    const handleDeleteUser = async () => {
+        dispatch(deleteUserStart());
+        await apiClient.delete(`${DELETE_USER_ROUTE}/${currentUser._id}`)
+            .then(res => {
+                dispatch(deleteUserSuccess(res?.data));
+            })
+            .catch(err => {
+                dispatch(deleteUserFailure(err?.response?.data?.message));
+            });
+    }
+
     return (
         <div className="p-3 max-w-lg mx-auto">
             <h1 className="text-3xl font-semibold text-center m-7">Profile</h1>
@@ -110,7 +121,7 @@ const Profile = () => {
             </form>
 
             <div className="flex justify-between mt-5">
-                <span className="text-red-700 cursor-pointer">Delete Account</span>
+                <span className="text-red-700 cursor-pointer" onClick={handleDeleteUser}>Delete Account</span>
                 <span className="text-red-700 cursor-pointer">Sign out</span>
             </div>
             {error && <p className='text-red-700 mt-5'>{error}</p>}
