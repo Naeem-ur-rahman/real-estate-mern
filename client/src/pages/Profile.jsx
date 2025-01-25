@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserFailure, deleteUserStart, deleteUserSuccess } from "../redux/user/userSlice";
+import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserFailure, deleteUserStart, deleteUserSuccess, signOutUserStart, signOutUserSuccess, signOutUserFailure } from "../redux/user/userSlice";
 import { apiClient } from "../lib/api-client";
-import { DELETE_USER_ROUTE, UPDATE_USER_ROUTE } from "../utils/constants";
+import { DELETE_USER_ROUTE, SIGNOUT_AUTH, UPDATE_USER_ROUTE } from "../utils/constants";
 const Profile = () => {
     const { currentUser, error, loading } = useSelector(state => state.user)
     const fileRef = useRef(null);
@@ -81,6 +81,17 @@ const Profile = () => {
                 dispatch(deleteUserFailure(err?.response?.data?.message));
             });
     }
+    
+    const handleSignOut = async () => {
+        dispatch(signOutUserStart());
+        await apiClient.get(SIGNOUT_AUTH)
+            .then(res => {
+                dispatch(signOutUserSuccess(res?.data));
+            })
+            .catch(err => {
+                dispatch(signOutUserFailure(err?.response?.data?.message));
+            });
+    }
 
     return (
         <div className="p-3 max-w-lg mx-auto">
@@ -122,7 +133,7 @@ const Profile = () => {
 
             <div className="flex justify-between mt-5">
                 <span className="text-red-700 cursor-pointer" onClick={handleDeleteUser}>Delete Account</span>
-                <span className="text-red-700 cursor-pointer">Sign out</span>
+                <span className="text-red-700 cursor-pointer" onClick={handleSignOut}>Sign out</span>
             </div>
             {error && <p className='text-red-700 mt-5'>{error}</p>}
             {updateSuccess && <p className='text-green-700 mt-5'>User Updated Successfully!</p>}
